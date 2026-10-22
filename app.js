@@ -196,7 +196,8 @@
   function cambiarTab(tab) {
     for (const b of document.querySelectorAll("#tabs button")) b.classList.toggle("activa", b.dataset.tab === tab);
     for (const t of ["consultar", "cargar", "usuarios"]) $(`tab-${t}`).classList.toggle("oculto", t !== tab);
-    if (tab === "consultar") $("patente").focus();
+    // En celular no se enfoca solo (abriría el teclado); en computadora sí
+    if (tab === "consultar" && matchMedia("(pointer: fine)").matches) $("patente").focus();
     if (tab === "cargar") { $("datos-al").value ||= hoyISO(); cargarEstadoDatos(); }
     if (tab === "usuarios") listarUsuarios();
   }
@@ -246,6 +247,9 @@
       <div class="pie">${esc(lineaDatos(r.datos))}</div>`;
   }
 
+  // Al tocar el cuadro para una nueva búsqueda, queda seleccionada la patente anterior para escribir encima
+  $("patente").addEventListener("focus", () => $("patente").select());
+
   $("form-consulta").addEventListener("submit", async (ev) => {
     ev.preventDefault();
     const buscada = $("patente").value.toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -257,7 +261,9 @@
       const { data, error } = await sb.rpc("transito_consultar", { p: buscada });
       if (error) throw error;
       pintarResultado(data, buscada);
-      $("patente").select();
+      // Cerrar el teclado y mostrar el resultado
+      $("patente").blur();
+      $("resultado").scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (e) {
       $("resultado").innerHTML = "";
       $("consulta-error").textContent = mensajeError(e);
