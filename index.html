@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1d4ed8">
+<title>Consulta de Patentes</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icono.svg" type="image/svg+xml">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+  :root {
+    --bg: #f3f4f6; --card: #ffffff; --text: #111827; --muted: #6b7280; --line: #e5e7eb;
+    --primary: #1d4ed8; --primary-text: #ffffff;
+    --ok: #15803d; --ok-bg: #dcfce7;
+    --bad: #b91c1c; --bad-bg: #fee2e2;
+    --warn: #92400e; --warn-bg: #fef3c7;
+    --none: #374151; --none-bg: #e5e7eb;
+    --info: #1e40af; --info-bg: #dbeafe;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b1220; --card: #111a2e; --text: #e5e7eb; --muted: #9ca3af; --line: #1f2a44;
+      --primary: #3b82f6; --primary-text: #ffffff;
+      --ok: #4ade80; --ok-bg: #052e16;
+      --bad: #f87171; --bad-bg: #450a0a;
+      --warn: #fbbf24; --warn-bg: #422006;
+      --none: #d1d5db; --none-bg: #1f2937;
+      --info: #93c5fd; --info-bg: #172554;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .oculto { display: none !important; }
+  main { max-width: 640px; margin: 0 auto; padding: 16px; }
+  header.barra { background: var(--primary); color: var(--primary-text); padding: 12px 16px;
+                 display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  header.barra h1 { font-size: 18px; margin: 0; }
+  header.barra small { opacity: .85; display: block; font-size: 13px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+          padding: 16px; margin-bottom: 16px; }
+  h2 { font-size: 18px; margin: 0 0 12px; }
+  label { display: block; font-size: 14px; color: var(--muted); margin: 10px 0 4px; }
+  input, select { width: 100%; padding: 12px; font-size: 16px; border-radius: 10px;
+                  border: 1px solid var(--line); background: var(--bg); color: var(--text); }
+  button { padding: 12px 16px; font-size: 16px; border-radius: 10px; border: 0; cursor: pointer;
+           background: var(--primary); color: var(--primary-text); font-weight: 600; }
+  button.sec { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+  button.chico { padding: 6px 10px; font-size: 14px; }
+  button:disabled { opacity: .5; cursor: default; }
+  .ancho { width: 100%; margin-top: 14px; }
+  .fila { display: flex; gap: 8px; align-items: end; }
+  .fila > * { flex: 1; }
+  .error { color: var(--bad); font-size: 14px; margin-top: 8px; min-height: 1em; }
+  .muted { color: var(--muted); font-size: 14px; }
+  nav.tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+  nav.tabs button { flex: 1; background: var(--card); color: var(--text); border: 1px solid var(--line); }
+  nav.tabs button.activa { background: var(--primary); color: var(--primary-text); border-color: var(--primary); }
+
+  #patente { font-size: 28px; text-align: center; letter-spacing: 3px; text-transform: uppercase;
+             font-weight: 700; padding: 14px; }
+  .resultado { border-radius: 14px; padding: 18px; margin-top: 16px; border: 2px solid transparent; }
+  .resultado .estado { font-size: 26px; font-weight: 800; letter-spacing: .5px; }
+  .resultado .pat { font-size: 20px; font-weight: 700; letter-spacing: 2px; margin-top: 4px; }
+  .resultado dl { margin: 12px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; }
+  .resultado dt { color: var(--muted); font-size: 14px; }
+  .resultado dd { margin: 0; font-weight: 600; }
+  .r-al_dia   { background: var(--ok-bg);   border-color: var(--ok);   } .r-al_dia .estado   { color: var(--ok); }
+  .r-con_deuda{ background: var(--bad-bg);  border-color: var(--bad);  } .r-con_deuda .estado{ color: var(--bad); }
+  .r-no_registrado, .r-invalida { background: var(--none-bg); border-color: var(--none); }
+  .r-no_registrado .estado, .r-invalida .estado { color: var(--none); }
+  .r-baja     { background: var(--none-bg); border-color: var(--none); } .r-baja .estado { color: var(--none); }
+  .r-exento   { background: var(--info-bg); border-color: var(--info); } .r-exento .estado { color: var(--info); }
+  .aviso { background: var(--warn-bg); color: var(--warn); border-radius: 10px; padding: 10px 12px;
+           margin-top: 12px; font-size: 14px; font-weight: 600; }
+  .pie { font-size: 13px; color: var(--muted); margin-top: 12px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 4px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .tag { display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 99px;
+         background: var(--none-bg); color: var(--none); }
+  .tag.off { background: var(--bad-bg); color: var(--bad); }
+  .hoja { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-top: 10px; }
+  .hoja b { display: block; }
+  .clave { font-family: ui-monospace, Consolas, monospace; font-size: 20px; letter-spacing: 2px;
+           background: var(--bg); padding: 8px 12px; border-radius: 8px; display: inline-block; }
+  .acciones { display: flex; gap: 6px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+
+<header class="barra">
+  <div>
+    <h1 id="titulo">Consulta de Patentes</h1>
+    <small id="subtitulo"></small>
+  </div>
+  <button id="btn-salir" class="sec chico oculto" style="color:#fff;border-color:#fff">Salir</button>
+</header>
+
+<main>
+  <!-- ===== Login ===== -->
+  <section id="vista-login" class="oculto">
+    <div class="card">
+      <h2>Ingresar</h2>
+      <form id="form-login">
+        <label for="login-dni">DNI</label>
+        <input id="login-dni" inputmode="numeric" autocomplete="username" required>
+        <label for="login-pass">Contraseña</label>
+        <input id="login-pass" type="password" autocomplete="current-password" required>
+        <button class="ancho" type="submit">Ingresar</button>
+        <div class="error" id="login-error"></div>
+      </form>
+    </div>
+    <p class="muted" id="link-inicio" style="text-align:center" hidden>
+      Primera vez: <a href="#" id="ir-inicio">configurar el usuario administrador</a>
+    </p>
+  </section>
+
+  <!-- ===== Configuración inicial (solo si no hay ningún admin) ===== -->
+  <section id="vista-inicio" class="oculto">
+    <div class="card">
+      <h2>Configuración inicial</h2>
+      <p class="muted">Creá tu usuario de administrador. Esta pantalla desaparece una vez creado.</p>
+      <form id="form-inicio">
+        <label for="ini-dni">Tu DNI</label>
+        <input id="ini-dni" inputmode="numeric" required>
+        <label for="ini-nombre">Nombre y apellido</label>
+        <input id="ini-nombre" required>
+        <label for="ini-pass">Contraseña (mínimo 8 caracteres)</label>
+        <input id="ini-pass" type="password" autocomplete="new-password" required minlength="8">
+        <label for="ini-pass2">Repetir contraseña</label>
+        <input id="ini-pass2" type="password" autocomplete="new-password" required minlength="8">
+        <button class="ancho" type="submit">Crear administrador</button>
+        <div class="error" id="inicio-error"></div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===== App ===== -->
+  <section id="vista-app" class="oculto">
+    <nav class="tabs" id="tabs">
+      <button data-tab="consultar" class="activa">Consultar</button>
+      <button data-tab="cargar" data-roles="admin,carga">Cargar datos</button>
+      <button data-tab="usuarios" data-roles="admin">Usuarios</button>
+    </nav>
+
+    <!-- Consultar -->
+    <div id="tab-consultar">
+      <div class="card">
+        <form id="form-consulta">
+          <label for="patente">Patente</label>
+          <input id="patente" autocomplete="off" autocapitalize="characters" spellcheck="false"
+                 placeholder="AB123CD" maxlength="10" required>
+          <button class="ancho" type="submit" id="btn-consultar">Consultar</button>
+        </form>
+        <div class="error" id="consulta-error"></div>
+        <div id="resultado"></div>
+      </div>
+    </div>
+
+    <!-- Cargar datos -->
+    <div id="tab-cargar" class="oculto">
+      <div class="card">
+        <h2>Cargar informes</h2>
+        <p class="muted">Subí el Excel tal cual sale del sistema. La app reconoce sola cada hoja:
+          padrón de vehículos activos, deudas de automotor o cobranzas.</p>
+        <label for="datos-al">Los datos son al día</label>
+        <input id="datos-al" type="date">
+        <label for="archivo">Archivo Excel</label>
+        <input id="archivo" type="file" accept=".xlsx,.xls,.csv">
+        <div id="previa"></div>
+        <button class="ancho oculto" id="btn-cargar">Confirmar carga</button>
+        <div class="error" id="carga-error"></div>
+        <div id="carga-resultado"></div>
+      </div>
+      <div class="card">
+        <h2>Últimas cargas</h2>
+        <div id="estado-cargas" class="muted">—</div>
+      </div>
+    </div>
+
+    <!-- Usuarios -->
+    <div id="tab-usuarios" class="oculto">
+      <div class="card">
+        <h2>Nuevo usuario</h2>
+        <form id="form-usuario">
+          <label for="u-dni">DNI</label>
+          <input id="u-dni" inputmode="numeric" required>
+          <label for="u-nombre">Nombre y apellido</label>
+          <input id="u-nombre" required>
+          <label for="u-rol">Rol</label>
+          <select id="u-rol">
+            <option value="agente">Agente (solo consulta)</option>
+            <option value="carga">Carga de datos (consulta y sube informes)</option>
+            <option value="admin">Administrador (todo, incluido usuarios)</option>
+          </select>
+          <label for="u-pass">Contraseña (mínimo 8 caracteres)</label>
+          <div class="fila">
+            <input id="u-pass" autocomplete="off" spellcheck="false" minlength="8" required>
+            <button type="button" class="sec" id="u-generar" style="flex:0 0 auto">Generar</button>
+          </div>
+          <button class="ancho" type="submit">Crear usuario</button>
+          <div class="error" id="usuario-error"></div>
+        </form>
+        <div id="usuario-creado"></div>
+      </div>
+      <div class="card">
+        <h2>Usuarios</h2>
+        <div id="lista-usuarios" class="muted">Cargando…</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="config.js"></script>
+<script src="lector.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

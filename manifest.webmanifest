@@ -1,0 +1,9 @@
+{
+  "name": "Consulta de Patentes",
+  "short_name": "Patentes",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f3f4f6",
+  "theme_color": "#1d4ed8",
+  "icons": [{ "src": "icono.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
