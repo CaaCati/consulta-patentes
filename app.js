@@ -162,6 +162,7 @@
 
   function pintarResultado(r, buscada) {
     const filas = [];
+    if (r.titular) filas.push([r.titular.includes(" / ") ? "Titulares" : "Titular", r.titular]);
     if (r.marca || r.modelo) filas.push(["Vehículo", [r.marca, r.modelo].filter(Boolean).join(" ")]);
     if (r.anio) filas.push(["Año", r.anio]);
     if (r.estado === "baja" && r.fecha_baja) filas.push(["Baja", fechaAR(r.fecha_baja)]);

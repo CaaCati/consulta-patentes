@@ -1,6 +1,6 @@
 // Lee los Excel tal cual salen del sistema y los convierte en filas para cargar.
 // Reconoce cada hoja por los nombres de sus columnas, no por el nombre de la hoja.
-// No sube nombres, DNI, domicilios ni montos: solo lo que la app necesita.
+// Del padrón sube el titular; no sube DNI, domicilios ni montos.
 (function (global) {
   // "Id.Bien" -> "idbien", "Año" / "A�o" -> "ano" / "ao"
   function claveColumna(s) {
@@ -101,11 +101,13 @@
           modelo: buscarColumna(claves, "modelo"),
           alta: buscarColumna(claves, "fechaalta"),
           baja: buscarColumna(claves, "fechabaja"),
+          titular: buscarColumna(claves, "apellidoynombres", "apellidoynombre", "titular", /nombre/),
         };
         const filas = datos
           .map((f) => ({
             id_bien: entero(f[c.idBien]),
             dominio: texto(f[c.dominio]),
+            titular: c.titular >= 0 ? texto(f[c.titular]) : "",
             marca: texto(f[c.marca]),
             modelo: texto(f[c.modelo]),
             anio: anioValido(f[c.anio]),
