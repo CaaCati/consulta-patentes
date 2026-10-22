@@ -1,12 +1,18 @@
 {
+  "id": "./",
   "name": "Dirección de Tránsito - Consulta de Patentes",
   "short_name": "Tránsito",
+  "description": "Consulta de patentes para agentes de la Dirección de Tránsito - Seguridad Vial, Municipio de Caá Catí.",
+  "lang": "es-AR",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#f58634",
   "theme_color": "#f58634",
   "icons": [
-    { "src": "icono-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    { "src": "icono-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }

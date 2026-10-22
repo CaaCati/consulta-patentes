@@ -73,9 +73,44 @@
     setTimeout(cerrar, 2400);
   }
 
+  // ===== App instalable y actualización automática =====
+  function prepararPWA() {
+    if (!("serviceWorker" in navigator)) return;
+    const habiaVersion = !!navigator.serviceWorker.controller;
+    let recargando = false;
+    // Cuando se publica una versión nueva, el service worker nuevo toma el control: recargar una vez
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (!habiaVersion || recargando) return;
+      recargando = true;
+      location.reload();
+    });
+    navigator.serviceWorker.register("sw.js").then((reg) => {
+      // Buscar actualizaciones al volver a la app y cada 30 minutos si queda abierta
+      document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") reg.update(); });
+      setInterval(() => reg.update(), 30 * 60 * 1000);
+    }).catch(() => { /* sin service worker la app funciona igual, solo no se instala */ });
+
+    // Botón "Instalar" (Android/Chrome). En iPhone se instala desde Compartir → Agregar a inicio.
+    let pedido = null;
+    window.addEventListener("beforeinstallprompt", (ev) => {
+      ev.preventDefault();
+      pedido = ev;
+      $("instalar").classList.remove("oculto");
+    });
+    $("btn-instalar").addEventListener("click", async () => {
+      if (!pedido) return;
+      pedido.prompt();
+      await pedido.userChoice;
+      pedido = null;
+      $("instalar").classList.add("oculto");
+    });
+    window.addEventListener("appinstalled", () => $("instalar").classList.add("oculto"));
+  }
+
   // ===== Arranque / sesión =====
   async function iniciar() {
     correrIntro();
+    prepararPWA();
     $("titulo").textContent = C.NOMBRE_APP;
     document.title = C.NOMBRE_APP;
     if (!sb) {

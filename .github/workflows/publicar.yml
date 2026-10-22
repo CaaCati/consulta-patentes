@@ -1,0 +1,43 @@
+# Publica la app en GitHub Pages en cada cambio.
+# Marca la versión (commit) en index.html y sw.js: así los celulares detectan la actualización solos.
+name: Publicar
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Marcar versión y armar el sitio
+        run: |
+          V="${GITHUB_SHA::7}"
+          sed -i "s/__VERSION__/$V/g" index.html sw.js
+          mkdir _sitio
+          cp index.html *.js *.png manifest.webmanifest robots.txt _sitio/
+          echo "Versión publicada: $V"
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _sitio
+
+      - id: deploy
+        uses: actions/deploy-pages@v4

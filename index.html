@@ -122,6 +122,12 @@
   .acciones { display: flex; gap: 6px; flex-wrap: wrap; }
 
   /* Intro: una onda naranja llena la pantalla y aparece el logo */
+  .instalar { display: flex; align-items: center; gap: 12px; background: var(--marca-suave); border: 1px solid var(--marca);
+              border-radius: var(--radio); padding: 12px 14px; margin-bottom: 16px; }
+  .instalar > div { flex: 1; font-size: 14px; }
+  .instalar b, .instalar span { display: block; }
+  .instalar button { padding: 10px 14px; font-size: 14px; flex: 0 0 auto; }
+
   #intro { position: fixed; inset: 0; z-index: 50; background: #fff; overflow: hidden; display: flex; flex-direction: column;
            align-items: center; justify-content: center; gap: 22px; cursor: pointer; transition: opacity .4s ease; }
   #intro.saliendo { opacity: 0; pointer-events: none; }
@@ -155,6 +161,10 @@
 </header>
 
 <main>
+  <div class="instalar oculto" id="instalar">
+    <div><b>Instalá la app</b><span class="muted">Queda como un ícono en el celular y abre a pantalla completa.</span></div>
+    <button type="button" id="btn-instalar">Instalar</button>
+  </div>
   <!-- ===== Login ===== -->
   <section id="vista-login" class="oculto">
     <div class="portada">
@@ -276,9 +286,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<!-- Subir el número de versión en cada cambio, para que los celulares no usen la copia vieja -->
-<script src="config.js?v=3"></script>
-<script src="lector.js?v=3"></script>
-<script src="app.js?v=3"></script>
+<!-- __VERSION__ lo reemplaza GitHub Actions por el commit al publicar (ver .github/workflows) -->
+<script src="config.js?v=__VERSION__"></script>
+<script src="lector.js?v=__VERSION__"></script>
+<script src="app.js?v=__VERSION__"></script>
 </body>
 </html>
