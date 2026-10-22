@@ -54,8 +54,28 @@
     return data;
   }
 
+  // ===== Intro =====
+  // Se ve una vez por sesión del navegador y un toque la saltea
+  function correrIntro() {
+    const el = $("intro");
+    if (!el) return;
+    let cerrada = false;
+    const cerrar = () => {
+      if (cerrada) return;
+      cerrada = true;
+      el.classList.add("saliendo");
+      setTimeout(() => el.remove(), 400);
+    };
+    let yaVista = false;
+    try { yaVista = sessionStorage.getItem("intro-vista") === "1"; sessionStorage.setItem("intro-vista", "1"); } catch (_) { /* sin storage */ }
+    if (yaVista || matchMedia("(prefers-reduced-motion: reduce)").matches) { el.remove(); return; }
+    el.addEventListener("click", cerrar);
+    setTimeout(cerrar, 2400);
+  }
+
   // ===== Arranque / sesión =====
   async function iniciar() {
+    correrIntro();
     $("titulo").textContent = C.NOMBRE_APP;
     document.title = C.NOMBRE_APP;
     if (!sb) {
