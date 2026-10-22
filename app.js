@@ -224,9 +224,7 @@
     if (r.estado === "baja" && r.fecha_baja) filas.push(["Baja", fechaAR(r.fecha_baja)]);
     if (!["no_registrado", "invalida"].includes(r.estado)) {
       if (r.ultimo_pago) {
-        const p = r.ultimo_pago;
-        const per = window.Lector.describirPeriodo(p.anio, p.periodo);
-        filas.push(["Último pago", fechaAR(p.fecha) + (per ? ` — ${per}` : "")]);
+        filas.push(["Último pago", fechaAR(r.ultimo_pago.fecha)]);
       } else {
         filas.push(["Último pago", "Sin pagos en los registros cargados"]);
       }
